@@ -1,7 +1,7 @@
 from rest_framework import status, views, viewsets
 from rest_framework.response import Response
 
-from .models import User
+from .models import Token, User
 from .serializers import UserSerializer
 
 
@@ -47,3 +47,33 @@ class RegistrationView(views.APIView):
             return Response({'Message': 'User created'}, status=status.HTTP_201_CREATED)
 
         return Response({'Error': 'Username already taken'}, status=status.HTTP_409_CONFLICT)
+
+
+class LoginView(views.APIView):
+    authentication_classes = ()
+
+    def post(self, request, *args, **kwargs):
+        required_fields = ('username', 'password')
+        for field in required_fields:
+            if field not in request.data:
+                return Response(
+                    {'error': 'This field is required {}'.format(field)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        try:
+            user = User.objects.get(username=request.data['username'])
+        except User.DoesNotExist:
+            return Response({'Error': 'User does not exist'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        is_correct_password = user.check_password(request.data['password'])
+        if is_correct_password:
+            try:
+                token = Token.objects.get(user_id=user.id)
+            except Token.DoesNotExist:
+                token = Token(user=user)
+                token.save()
+
+            return Response({'Token': token.key}, status=status.HTTP_202_ACCEPTED)
+
+        return Response({'Error': 'Invalid password'}, status=status.HTTP_401_UNAUTHORIZED)
