@@ -1,3 +1,6 @@
+import binascii
+import os
+
 from django.db import models
 from django.contrib.auth.hashers import (
     check_password, make_password,
