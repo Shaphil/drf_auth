@@ -77,3 +77,11 @@ class LoginView(views.APIView):
             return Response({'Token': token.key}, status=status.HTTP_202_ACCEPTED)
 
         return Response({'Error': 'Invalid password'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class LogoutView(views.APIView):
+
+    def post(self, request, *args, **kwargs):
+        token = Token.objects.get(user=request.user)
+        token.delete()
+        return Response(status=status.HTTP_200_OK)
