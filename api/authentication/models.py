@@ -1,4 +1,5 @@
 import binascii
+import datetime
 import os
 
 from django.db import models
@@ -65,20 +66,16 @@ class User(AbstractBaseUser):
         return self.username
 
 
-class Token(models.Model):
-    """
-    The default authorization token model.
-    """
+class BaseToken(models.Model):
     key = models.CharField(max_length=40, primary_key=True)
-    user = models.OneToOneField(
-        User, related_name='auth_token',
-        on_delete=models.CASCADE, verbose_name="User"
-    )
     created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
 
     def save(self, *args, **kwargs):
         self.set_key()
-        return super(Token, self).save(*args, **kwargs)
+        return super(BaseToken, self).save(*args, **kwargs)
 
     def set_key(self):
         if not self.key:
@@ -89,3 +86,26 @@ class Token(models.Model):
 
     def __str__(self):
         return self.key
+
+
+class Token(BaseToken):
+    """
+    The default authorization token model.
+    """
+    user = models.OneToOneField(
+        User, related_name='auth_token',
+        on_delete=models.CASCADE, verbose_name="User"
+    )
+
+
+class PasswordResetToken(BaseToken):
+    user = models.OneToOneField(
+        User, related_name='password_reset_token',
+        on_delete=models.CASCADE, verbose_name="User"
+    )
+
+    class Meta:
+        db_table = 'authentication_password_reset_token'
+
+    def has_expired(self):
+        return self.created >= timezone.now() - datetime.timedelta(days=1)
