@@ -68,12 +68,7 @@ class LoginView(views.APIView):
 
         is_correct_password = user.check_password(request.data['password'])
         if is_correct_password:
-            try:
-                token = Token.objects.get(user_id=user.id)
-            except Token.DoesNotExist:
-                token = Token(user=user)
-                token.save()
-
+            token, created = Token.objects.get_or_create(user_id=user.id)
             return Response({'Token': token.key}, status=status.HTTP_202_ACCEPTED)
 
         return Response({'Error': 'Invalid password'}, status=status.HTTP_401_UNAUTHORIZED)
