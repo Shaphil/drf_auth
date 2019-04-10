@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 from .models import PasswordResetToken, Token, User
 from .serializers import UserSerializer
+from .utilities import send_activation_email
 
 
 class Default(views.APIView):
@@ -104,7 +105,9 @@ class CreatePasswordResetView(views.APIView):
         token, created = PasswordResetToken.objects.get_or_create(user=user)
         url = request.build_absolute_uri(
             reverse('activate-reset-password', args=[token.key]))
-        return Response({'url': url}, status=status.HTTP_200_OK)
+        to = [user.email]
+        send_activation_email(to, url)
+        return Response({'Message': 'An activation link has been sent to {}'.format(user.email)}, status=status.HTTP_200_OK)
 
 
 class ActivatePasswordResetView(views.APIView):
