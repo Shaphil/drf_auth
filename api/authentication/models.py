@@ -108,4 +108,4 @@ class PasswordResetToken(BaseToken):
         db_table = 'authentication_password_reset_token'
 
     def has_expired(self):
-        return self.created >= timezone.now() - datetime.timedelta(days=1)
+        return self.created <= timezone.now() - datetime.timedelta(days=1)
