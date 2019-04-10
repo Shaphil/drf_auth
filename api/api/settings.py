@@ -129,3 +129,10 @@ REST_FRAMEWORK = {
         'authentication.auth.TokenBasedAuthentication',
     )
 }
+
+# email settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'mail_id@email.com'
+EMAIL_HOST_PASSWORD = 'password'
